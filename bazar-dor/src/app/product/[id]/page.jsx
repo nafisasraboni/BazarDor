@@ -16,29 +16,13 @@ function ProductDetailsContent() {
   useEffect(() => {
     if (!isPending && !session && !toastShown.current) {
       toastShown.current = true;
-      toast.custom((t) => (
-        <div
-          className={`${
-            t.visible ? 'animate-enter' : 'animate-leave'
-          } max-w-md w-full bg-white shadow-lg rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4 items-center justify-between gap-4`}
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-red-500 text-xl font-bold">✕</span>
-            <p className="text-sm font-medium text-gray-800">
-              প্রোডাক্ট বিস্তারিত দেখতে হলে সাইন ইন করতে হবে!
-            </p>
-          </div>
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="text-gray-400 hover:text-gray-600 font-bold px-2 py-1 text-sm rounded-lg transition"
-          >
-            বন্ধ করুন
-          </button>
-        </div>
-      ), {
-        duration: 4000, // ৪ সেকেন্ড পর অটো চলে যাবে
-        position: 'top-center'
+      
+      // ২ সেকেন্ডের জন্য টোস্ট দেখাবে এবং নিজে থেকেই চলে যাবে
+      toast.error("প্রোডাক্ট বিস্তারিত দেখতে হলে সাইন ইন করতে হবে!", {
+        duration: 2000,
+        position: 'top-center',
       });
+
       router.push("/signin");
     }
   }, [session, isPending, router]);
