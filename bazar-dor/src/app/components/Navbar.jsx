@@ -15,11 +15,19 @@ export default function Navbar() {
   useEffect(() => {
     fetch("https://openapi.programming-hero.com/api/bazardor/categories")
       .then((res) => res.json())
-      .then((data) => setCategories(data.data || []));
+      .then((data) => {
+        const catList = Array.isArray(data) ? data : (data.data || []);
+        setCategories(catList);
+      })
+      .catch((err) => console.error("Categories Fetch Error:", err));
 
     fetch("https://openapi.programming-hero.com/api/bazardor/products")
       .then((res) => res.json())
-      .then((data) => setTickerItems(data.data || []));
+      .then((data) => {
+        const prodList = Array.isArray(data) ? data : (data.data || []);
+        setTickerItems(prodList);
+      })
+      .catch((err) => console.error("Products Fetch Error:", err));
   }, []);
 
   return (
@@ -102,8 +110,8 @@ export default function Navbar() {
                     : "text-gray-600 hover:bg-gray-200/60"
                 }`}
               >
-                <span>{cat.icon || "📦"}</span>
-                <span>{cat.name}</span>
+                <span>{cat.icon || cat.categoryIcon || "📦"}</span>
+                <span>{cat.nameBn || cat.name}</span>
               </Link>
             );
           })}
@@ -113,16 +121,22 @@ export default function Navbar() {
       {/* Price Ticker (Marquee) */}
       <div className="bg-emerald-50/50 border-t border-emerald-100 py-2 overflow-hidden whitespace-nowrap">
         <div className="flex animate-marquee gap-8 text-xs font-medium text-gray-700">
-          {tickerItems.map((item, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <span>{item.icon || "📦"}</span>
-              <span>{item.name}</span>
-              <span className="text-emerald-700 font-bold">{item.price} টাকা/{item.unit}</span>
-              <span className={item.change >= 0 ? "text-emerald-600 font-semibold" : "text-red-500 font-semibold"}>
-                {item.change >= 0 ? "▲" : "▼"} {Math.abs(item.change)}%
-              </span>
-            </div>
-          ))}
+          {tickerItems.map((item, idx) => {
+            const priceVal = item.today || item.price || 0;
+            const isUp = item.change?.dir === "up" || item.change >= 0;
+            const changePct = item.change?.pct || Math.abs(item.change || 0);
+
+            return (
+              <div key={idx} className="flex items-center gap-2">
+                <span>{item.image || item.categoryIcon || "📦"}</span>
+                <span>{item.nameBn || item.name}</span>
+                <span className="text-emerald-700 font-bold">{priceVal} টাকা/{item.unit || "কেজি"}</span>
+                <span className={isUp ? "text-emerald-600 font-semibold" : "text-red-500 font-semibold"}>
+                  {isUp ? "▲" : "▼"} {changePct}%
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </header>
