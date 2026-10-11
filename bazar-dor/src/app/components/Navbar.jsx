@@ -1,15 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { authClient } from "@/lib/auth-client";
 import { ShoppingCart, User, LogOut, ChevronDown } from "lucide-react";
 
-export default function Navbar() {
-  const { data: session } = authClient.useSession();
+// Category Links Component wrapped with usePathname
+function CategoryLinks() {
   const [categories, setCategories] = useState([]);
-  const [tickerItems, setTickerItems] = useState([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -20,7 +18,39 @@ export default function Navbar() {
         setCategories(catList);
       })
       .catch((err) => console.error("Categories Fetch Error:", err));
+  }, []);
 
+  return (
+    <div className="bg-gray-50 border-t border-gray-100 py-2">
+      <div className="max-w-7xl mx-auto px-4 flex items-center gap-6 overflow-x-auto no-scrollbar">
+        {categories.map((cat) => {
+          const isActive = pathname === `/category/${cat.slug}`;
+          return (
+            <Link
+              key={cat.id || cat.slug}
+              href={`/category/${cat.slug}`}
+              className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full transition whitespace-nowrap ${
+                isActive
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-gray-600 hover:bg-gray-200/60"
+              }`}
+            >
+              <span>{cat.icon || cat.categoryIcon || "📦"}</span>
+              <span>{cat.nameBn || cat.name}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export default function Navbar() {
+  const { data: session } = authClient.useSession();
+  const [tickerItems, setTickerItems] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  useEffect(() => {
     fetch("https://openapi.programming-hero.com/api/bazardor/products")
       .then((res) => res.json())
       .then((data) => {
@@ -95,28 +125,10 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Category Navigation Links Row */}
-      <div className="bg-gray-50 border-t border-gray-100 py-2">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-6 overflow-x-auto no-scrollbar">
-          {categories.map((cat) => {
-            const isActive = pathname === `/category/${cat.slug}`;
-            return (
-              <Link
-                key={cat.id || cat.slug}
-                href={`/category/${cat.slug}`}
-                className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full transition whitespace-nowrap ${
-                  isActive
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-gray-600 hover:bg-gray-200/60"
-                }`}
-              >
-                <span>{cat.icon || cat.categoryIcon || "📦"}</span>
-                <span>{cat.nameBn || cat.name}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+      {/* Category Navigation Links Row wrapped with Suspense */}
+      <Suspense fallback={<div className="h-10 bg-gray-50"></div>}>
+        <CategoryLinks />
+      </Suspense>
 
       {/* Price Ticker (Marquee) */}
       <div className="bg-emerald-50/50 border-t border-emerald-100 py-2 overflow-hidden whitespace-nowrap">
