@@ -14,6 +14,7 @@ BazarDor is a modern, fully responsive web application designed to track daily e
 ---
 
 ## 🛠️ Technologies Used
+* **Language:** JavaScript
 * **Framework:** Next.js (App Router)
 * **Styling:** Tailwind CSS
 * **Authentication:** BetterAuth & MongoDB
