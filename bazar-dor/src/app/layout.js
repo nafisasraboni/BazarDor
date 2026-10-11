@@ -1,8 +1,8 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/Navbar"; // নেভবার ইমপোর্ট করুন
-//import Footer from "./components/Footer"; // ফুটারও ইমপোর্ট করতে পারেন
+import Navbar from "@/app/components/Navbar";
 import { Toaster } from "react-hot-toast";
+import { Suspense } from "react"; // ১. Suspense ইমপোর্ট করুন
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,14 +17,14 @@ export default function RootLayout({ children }) {
       <body className={`${inter.className} bg-[#f9fafb] text-gray-900 min-h-screen flex flex-col justify-between`}>
         <Toaster position="top-right" />
         
-        {/* Navbar এখানে রেন্ডার হবে যাতে সব পেজে দেখা যায় */}
-        <Navbar></Navbar>
+        {/* ২. Navbar কে Suspense দিয়ে র‍্যাপ করুন */}
+        <Suspense fallback={<header className="bg-white h-16 border-b"></header>}>
+          <Navbar />
+        </Suspense>
 
         <main className="flex-grow">
           {children}
         </main>
-
-        {/* <Footer /> */}
       </body>
     </html>
   );

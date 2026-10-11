@@ -6,15 +6,18 @@ import { authClient } from '@/lib/auth-client';
 import toast from 'react-hot-toast';
 
 export default function Navbar() {
-  const pathname = usePathname();
+  const [pathname, setPathname] = useState('');
+  const rawPathname = usePathname();
+  
   const { data: session } = authClient.useSession();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [tickerProducts, setTickerProducts] = useState([]);
-  const [isMounted, setIsMounted] = useState(false); // Hydration fix er jonno
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true); // Component mount hoyeche nischit korchi
+    setIsMounted(true);
+    setPathname(rawPathname);
 
     async function fetchNavData() {
       try {
@@ -33,7 +36,7 @@ export default function Navbar() {
     }
 
     fetchNavData();
-  }, []);
+  }, [rawPathname]);
 
   const categoryIcons = {
     'chal': '🍚',
@@ -46,14 +49,13 @@ export default function Navbar() {
     'spices': '🌶️',
   };
 
-  // Jodi client mount na hoy, tobe server-side e simple fallback ba null return korbe jate mismatch na hoy
   if (!isMounted) {
     return <header className="bg-white shadow-xs border-b h-16"></header>;
   }
 
   return (
     <header className="bg-white shadow-xs border-b sticky top-0 z-50">
-      {/* 1st Row: Logo & Auth */}
+      {/* ১ম রো: লোগো ও অথ */}
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="bg-[#107c41] text-white p-2.5 rounded-2xl text-xl shadow-xs">🛒</div>
@@ -110,7 +112,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 2nd Row: Categories */}
+      {/* ২য় রো: ক্যাটাগরি */}
       <div className="border-t bg-gray-50/60">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex gap-6 overflow-x-auto text-sm items-center">
           {categories.map((cat, idx) => {
@@ -135,7 +137,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Price Ticker */}
+      {/* প্রাইস টিকার */}
       <div className="bg-[#f4f7f5] border-t overflow-hidden py-2 text-xs text-gray-700 flex whitespace-nowrap relative">
         <div className="flex gap-6 animate-marquee items-center">
           {tickerProducts.length > 0 ? (

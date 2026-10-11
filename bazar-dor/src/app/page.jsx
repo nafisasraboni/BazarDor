@@ -40,13 +40,14 @@ export default function HomePage() {
   }
 
   // মূল প্রোডাক্ট লিস্ট থেকে ফিল্টার করে দাম বাড়া ও কমা পণ্যগুলো বের করা হচ্ছে
+  // Safe filtering logic
   const risers = products.filter(p => {
-    const val = Number(p.change !== undefined ? p.change : (p.percentage || 0));
+    const val = Number(p.change || p.percentage || p.priceChange || 0);
     return val > 0;
   });
 
   const fallers = products.filter(p => {
-    const val = Number(p.change !== undefined ? p.change : (p.percentage || 0));
+    const val = Number(p.change || p.percentage || p.priceChange || 0);
     return val < 0;
   });
 
