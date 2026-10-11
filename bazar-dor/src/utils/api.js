@@ -1,23 +1,43 @@
-const BASE_URL = "https://openapi.programming-hero.com/api/bazardor";
+export function extractArray(response, keys = []) {
+  if (Array.isArray(response)) {
+    return response;
+  }
 
-export async function fetchAllProducts() {
-    try {
-        const res = await fetch(`${BASE_URL}/products`);
-        const data = await res.json();
-        return data.data || [];
-    } catch (error) {
-        console.error("Failed to fetch products:", error);
-        return [];
+  if (!response || typeof response !== "object") {
+    return [];
+  }
+
+  for (const key of keys) {
+    if (Array.isArray(response[key])) {
+      return response[key];
     }
+  }
+
+  if (response.data && typeof response.data === "object") {
+    for (const key of keys) {
+      if (Array.isArray(response.data[key])) {
+        return response.data[key];
+      }
+    }
+  }
+
+  return [];
 }
 
-export async function fetchCategories() {
-    try {
-        const res = await fetch(`${BASE_URL}/categories`);
-        const data = await res.json();
-        return data.data || [];
-    } catch (error) {
-        console.error("Failed to fetch categories:", error);
-        return [];
-    }
+export function toEnglishDigits(value) {
+  const bengaliDigits = "০১২৩৪৫৬৭৮৯";
+
+  return String(value ?? "").replace(/[০-৯]/g, (digit) =>
+    String(bengaliDigits.indexOf(digit))
+  );
+}
+
+export function toNumber(value) {
+  const normalized = toEnglishDigits(value)
+    .replace(/[,،\s]/g, "")
+    .replace(/[^0-9.-]/g, "");
+
+  const number = Number(normalized);
+
+  return Number.isFinite(number) ? number : 0;
 }

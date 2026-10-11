@@ -1,170 +1,128 @@
-'use client';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { authClient } from '@/lib/auth-client';
-import toast from 'react-hot-toast';
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { authClient } from "@/lib/auth-client";
+import { ShoppingCart, User, LogOut, ChevronDown } from "lucide-react";
 
 export default function Navbar() {
-  const [pathname, setPathname] = useState('');
-  const rawPathname = usePathname();
-  
   const { data: session } = authClient.useSession();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [tickerProducts, setTickerProducts] = useState([]);
-  const [isMounted, setIsMounted] = useState(false);
+  const [tickerItems, setTickerItems] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
-    setIsMounted(true);
-    setPathname(rawPathname);
+    fetch("https://openapi.programming-hero.com/api/bazardor/categories")
+      .then((res) => res.json())
+      .then((data) => setCategories(data.data || []));
 
-    async function fetchNavData() {
-      try {
-        const catRes = await fetch("https://openapi.programming-hero.com/api/bazardor/categories");
-        const catData = await catRes.json();
-        const catList = Array.isArray(catData) ? catData : (catData?.data || catData?.categories || []);
-        setCategories(catList);
-
-        const prodRes = await fetch("https://openapi.programming-hero.com/api/bazardor/products");
-        const prodData = await prodRes.json();
-        const prodList = Array.isArray(prodData) ? prodData : (prodData?.data || prodData?.products || []);
-        setTickerProducts(prodList);
-      } catch (err) {
-        console.log("Error:", err);
-      }
-    }
-
-    fetchNavData();
-  }, [rawPathname]);
-
-  const categoryIcons = {
-    'chal': '🍚',
-    'dal': '🫘',
-    'oil': '🫙',
-    'vegetables': '🥬',
-    'fish': '🐟',
-    'meat': '🍗',
-    'egg-milk': '🥛',
-    'spices': '🌶️',
-  };
-
-  if (!isMounted) {
-    return <header className="bg-white shadow-xs border-b h-16"></header>;
-  }
+    fetch("https://openapi.programming-hero.com/api/bazardor/products")
+      .then((res) => res.json())
+      .then((data) => setTickerItems(data.data || []));
+  }, []);
 
   return (
-    <header className="bg-white shadow-xs border-b sticky top-0 z-50">
-      {/* ১ম রো: লোগো ও অথ */}
-      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <div className="bg-[#107c41] text-white p-2.5 rounded-2xl text-xl shadow-xs">🛒</div>
-          <div>
-            <Link href="/" className="text-xl font-bold text-gray-900 tracking-tight">বাজার দর</Link>
-            <p className="text-xs text-gray-500 font-medium">মঙ্গলবার, ৬ অক্টোবর, ২০২৬</p>
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      {/* Top Main Navbar Row */}
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="bg-emerald-600 text-white p-2 rounded-lg flex items-center justify-center">
+            <ShoppingCart className="w-6 h-6" />
           </div>
-        </div>
+          <div>
+            <span className="font-bold text-xl text-gray-900">বাজার দর</span>
+            <p className="text-xs text-gray-500">মঙ্গলবার, ৬ অক্টোবর, ২০২৬</p>
+          </div>
+        </Link>
 
+        {/* Right Auth Section */}
         <div>
           {session ? (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 border px-3 py-1.5 rounded-full hover:bg-gray-50 transition cursor-pointer"
+                className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200 transition"
               >
-                <img 
-                  src={session.user.image || "https://picsum.photos/30"} 
-                  alt="Profile" 
-                  className="w-8 h-8 rounded-full object-cover border" 
+                <img
+                  src={session.user.image || "https://i.ibb.co.com/5G0X3Yr/avatar.png"}
+                  alt="User"
+                  className="w-7 h-7 rounded-full object-cover"
                 />
-                <span className="text-sm font-semibold text-gray-800">{session.user.name}</span>
-                <span className="text-gray-500 text-xs">▾</span>
+                <span className="text-sm font-medium text-gray-700">{session.user.name}</span>
+                <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white border rounded-2xl shadow-xl p-2 z-50">
-                  <div className="px-3 py-2 border-b mb-1">
-                    <p className="font-bold text-sm text-gray-800">{session.user.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
-                  </div>
-                  <Link href="/profile" onClick={() => setDropdownOpen(false)} className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl font-medium">
-                    👤 আমার প্রোফাইল
-                  </Link>
-                  <button 
-                    onClick={async () => {
-                      await authClient.signOut();
-                      toast.success("সফলভাবে সাইন আউট করা হয়েছে");
-                      window.location.href = "/signin";
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl font-medium cursor-pointer mt-1"
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50">
+                  <Link
+                    href="/profile"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
-                    ↩️ সাইন আউট
+                    <User className="w-4 h-4 text-emerald-600" /> আমার প্রোফাইল
+                  </Link>
+                  <button
+                    onClick={() => authClient.signOut({ callbackUrl: "/" })}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left"
+                  >
+                    <LogOut className="w-4 h-4" /> সাইন আউট
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <Link href="/signin" className="px-4 py-2 text-sm font-medium border rounded-xl hover:bg-gray-50 text-gray-700">সাইন ইন</Link>
-              <Link href="/signup" className="px-4 py-2 text-sm font-medium bg-[#107c41] text-white rounded-xl hover:bg-[#0e6b37]">সাইন আপ</Link>
+            <div className="flex items-center gap-3">
+              <Link href="/signin" className="text-sm font-medium text-gray-700 hover:text-emerald-600">
+                সাইন ইন
+              </Link>
+              <Link
+                href="/signup"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow-sm"
+              >
+                সাইন আপ
+              </Link>
             </div>
           )}
         </div>
       </div>
 
-      {/* ২য় রো: ক্যাটাগরি */}
-      <div className="border-t bg-gray-50/60">
-        <div className="max-w-7xl mx-auto px-4 py-2.5 flex gap-6 overflow-x-auto text-sm items-center">
-          {categories.map((cat, idx) => {
-            const catSlug = cat.slug || '';
-            const catName = cat.nameBn || cat.name || '';
-            const catIcon = cat.icon || '🛒';
-            const isActive = pathname === `/category/${catSlug}`;
-            
+      {/* Category Navigation Links Row */}
+      <div className="bg-gray-50 border-t border-gray-100 py-2">
+        <div className="max-w-7xl mx-auto px-4 flex items-center gap-6 overflow-x-auto no-scrollbar">
+          {categories.map((cat) => {
+            const isActive = pathname === `/category/${cat.slug}`;
             return (
-              <Link 
-                key={idx} 
-                href={`/category/${catSlug}`} 
-                className={`flex items-center gap-1.5 whitespace-nowrap font-medium px-3 py-1.5 rounded-xl transition ${
-                  isActive ? 'bg-[#107c41] text-white shadow-xs' : 'text-gray-600 hover:text-[#107c41] hover:bg-gray-100'
+              <Link
+                key={cat.id || cat.slug}
+                href={`/category/${cat.slug}`}
+                className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full transition whitespace-nowrap ${
+                  isActive
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-200/60"
                 }`}
               >
-                <span>{catIcon}</span>
-                <span>{catName}</span>
+                <span>{cat.icon || "📦"}</span>
+                <span>{cat.name}</span>
               </Link>
             );
           })}
         </div>
       </div>
 
-      {/* প্রাইস টিকার */}
-      <div className="bg-[#f4f7f5] border-t overflow-hidden py-2 text-xs text-gray-700 flex whitespace-nowrap relative">
-        <div className="flex gap-6 animate-marquee items-center">
-          {tickerProducts.length > 0 ? (
-            tickerProducts.concat(tickerProducts).map((item, idx) => {
-              const itemName = item.nameBn || item.name || item.title || 'পণ্য';
-              const itemPrice = item.price || item.currentPrice || item.todayPrice || '০';
-              const itemUnit = item.unit || item.unitName || 'কেজি';
-              const itemEmoji = item.icon || item.emoji || '🍚';
-              
-              const rawChange = item.change !== undefined ? item.change : (item.percentage !== undefined ? item.percentage : 0);
-              const changeVal = Number(rawChange) || 0;
-              const isUp = changeVal >= 0;
-
-              return (
-                <span key={idx} className="flex items-center gap-1.5 bg-white px-3 py-1 rounded-full border shadow-2xs font-medium">
-                  <span>{itemEmoji}</span>
-                  <span className="text-gray-800">{itemName}</span>
-                  <span className="text-gray-500">{itemPrice} টাকা/{itemUnit}</span>
-                  <span className={`font-bold ${isUp ? 'text-green-600' : 'text-red-600'}`}>
-                    {isUp ? `▲ ${Math.abs(changeVal)}%` : `▼ ${Math.abs(changeVal)}%`}
-                  </span>
-                </span>
-              );
-            })
-          ) : (
-            <span className="px-4 text-gray-500">মূল্য তালিকা লোড হচ্ছে...</span>
-          )}
+      {/* Price Ticker (Marquee) */}
+      <div className="bg-emerald-50/50 border-t border-emerald-100 py-2 overflow-hidden whitespace-nowrap">
+        <div className="flex animate-marquee gap-8 text-xs font-medium text-gray-700">
+          {tickerItems.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <span>{item.icon || "📦"}</span>
+              <span>{item.name}</span>
+              <span className="text-emerald-700 font-bold">{item.price} টাকা/{item.unit}</span>
+              <span className={item.change >= 0 ? "text-emerald-600 font-semibold" : "text-red-500 font-semibold"}>
+                {item.change >= 0 ? "▲" : "▼"} {Math.abs(item.change)}%
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </header>
