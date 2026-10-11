@@ -64,6 +64,18 @@ export default function SignInPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-gray-100">
           <form className="space-y-4" onSubmit={handleSignIn}>
+            
+            <input
+              type="text"
+              name="fake-username"
+              style={{ display: "none" }}
+            />
+            <input
+              type="password"
+              name="fake-password"
+              style={{ display: "none" }}
+            />
+
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 ইমেইল
@@ -71,6 +83,7 @@ export default function SignInPage() {
               <input
                 type="email"
                 required
+                name="real-email-input"
                 autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -78,6 +91,8 @@ export default function SignInPage() {
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
               />
             </div>
+
+            {/* পাসওয়ার্ড ফিল্ড */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 পাসওয়ার্ড
@@ -86,7 +101,8 @@ export default function SignInPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   required
-                  autoComplete="current-password"
+                  name="real-password-input"
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="কমপক্ষে ৮ অক্ষর"
@@ -105,6 +121,7 @@ export default function SignInPage() {
                 </button>
               </div>
             </div>
+
             <button
               type="submit"
               disabled={loading}
