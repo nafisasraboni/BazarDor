@@ -16,6 +16,11 @@
 }
 
 .animate-marquee {
-  display: inline-block;
-  animation: marquee 25s linear infinite;
+  display: flex;
+  width: max-content;
+  animation: marquee 70s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
