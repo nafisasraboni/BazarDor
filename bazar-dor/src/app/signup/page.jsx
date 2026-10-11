@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { signUp } from "@/lib/auth-client";
+import { signUp ,signIn} from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
@@ -19,7 +19,7 @@ export default function SignUpPage() {
   const handleSignUp = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      toast.error("পাসওয়ার্ড মিল, আবার লিখুন!");
+      toast.error("পাসওয়ার্ড মিলছে না, আবার লিখুন!");
       return;
     }
     setLoading(true);
@@ -47,14 +47,17 @@ export default function SignUpPage() {
     }
   };
 
-  const handleSocialLogin = async (provider) => {
+  const handleSocialLogin = async (providerName) => {
     try {
-      await signUp.social({
-        provider: provider,
+      console.log("Triggering social login for:", providerName);
+      const res = await signIn.social({
+        provider: providerName,
         callbackURL: "/",
       });
+      console.log("Social login success:", res);
     } catch (err) {
-      toast.error("সোশ্যাল লগইন ব্যর্থ হয়েছে");
+      console.error("Social login detailed error:", err);
+      toast.error("সোশ্যাল লগইন ব্যর্থ হয়েছে: " + (err.message || "Unknown error"));
     }
   };
 
@@ -148,9 +151,9 @@ export default function SignUpPage() {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
                     <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
                   )}
                 </button>
               </div>
@@ -175,16 +178,18 @@ export default function SignUpPage() {
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
+                type="button"
                 onClick={() => handleSocialLogin("google")}
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-xl shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-xl shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition"
               >
-                Google দিয়ে চালিয়ে যান
+                Google দিয়ে চালিয়ে যান
               </button>
               <button
+                type="button"
                 onClick={() => handleSocialLogin("github")}
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-xl shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-xl shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition"
               >
-                GitHub দিয়ে চালিয়ে যান
+                GitHub দিয়ে চালিয়ে যান
               </button>
             </div>
           </div>
